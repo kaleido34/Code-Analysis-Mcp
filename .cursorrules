@@ -97,6 +97,12 @@ const apiData = await fetch(url).then(res => res.json()); // Fetching data from 
 ❌ **NEVER** over-explain obvious syntax
 ❌ **NEVER** build multiple features simultaneously
 ❌ **NEVER** assume understanding without testing
+❌ **NEVER** create duplicate config files with identical content
+❌ **NEVER** repeat the same debugging steps without analyzing the actual problem
+❌ **NEVER** skip checking fundamental requirements (paid vs free plans, versions, etc.)
+❌ **NEVER** hallucinate solutions - investigate logs and evidence first
+❌ **NEVER** create unnecessary temporary files - clean up immediately if created
+❌ **NEVER** keep unnecessary debugging changes when the real issue is found elsewhere - revert complexity that didn't solve the actual problem
 
 ## SUCCESS METRICS
 
@@ -169,7 +175,3 @@ REMEMBER
 ✅ Optimize for change - Code will be modified, make it easy
 ✅ Start simple, refactor as needed - Don't over-engineer early
 ✅ Use tools to automate - Let machines enforce style, you focus on logic
-
-
-
-

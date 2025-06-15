@@ -14,7 +14,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "setup": "npm run build",
-    "analyze": "ts-node src/cli.ts"
+    "mcp": "node test-client.js"
   },
   "keywords": [
     "mcp",

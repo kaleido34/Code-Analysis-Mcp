@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "code-analysis": {
+      "command": "node",
+      "args": ["--loader", "ts-node/esm", "src/server.ts"],
+      "cwd": "C:\\Users\\pasha\\Desktop\\Mcp"
+    }
+  }
+}
