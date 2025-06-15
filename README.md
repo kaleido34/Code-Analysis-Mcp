@@ -80,3 +80,6 @@ Code Analysis MCP Server
 - **Zod** - Runtime schema validation
 - **Winston** - Professional logging
 - **Jest** - Testing framework
+
+
+@code-analysis {"path": "C:\\Users\\pasha\\Desktop\\N2N"}

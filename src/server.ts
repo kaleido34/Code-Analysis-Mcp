@@ -30,6 +30,7 @@ import {
   isValidPath
 } from './utils.js';
 import { FileType, ComplexityLevel } from './types.js';
+import * as fs from 'fs/promises';
 
 class CodeAnalysisServer {
   private server: Server;
@@ -103,14 +104,14 @@ class CodeAnalysisServer {
       return {
         tools: [
           {
-            name: 'analyze_file',
-            description: 'Analyze a single file for complexity and metrics',
+            name: 'analyze_path',
+            description: 'Analyze a file or directory (recursively) for metrics',
             inputSchema: {
               type: 'object',
               properties: {
-                filePath: { type: 'string', description: 'Path to analyze' },
+                path: { type: 'string', description: 'Absolute or relative path to analyze' },
               },
-              required: ['filePath'],
+              required: ['path'],
             },
           },
           {
@@ -133,8 +134,8 @@ class CodeAnalysisServer {
       const { name, arguments: args } = request.params;
 
       switch (name) {
-        case 'analyze_file':
-          return await this.analyzeFile(args?.filePath as string);
+        case 'analyze_path':
+          return await this.analyzePath(args?.path as string);
         
         case 'generate_documentation':
           return await this.generateDocs(args?.projectName as string, args?.format as string);
@@ -180,34 +181,66 @@ class CodeAnalysisServer {
     });
   }
 
-  private async analyzeFile(filePath: string) {
-    const fullPath = path.resolve(this.currentProjectPath, filePath);
-    const content = await safeReadFile(fullPath);
-    
-    if (!content) {
-      throw new McpError(ErrorCode.InvalidRequest, 'File not found');
+  private async analyzePath(inputPath: string) {
+    if (!inputPath) {
+      throw new McpError(ErrorCode.InvalidRequest, 'Path is required');
     }
 
-    const fileInfo = await getFileInfo(fullPath);
-    const complexity = calculateCyclomaticComplexity(content);
-    
-    const analysis = {
-      filePath,
-      fileType: fileInfo.type,
-      lines: fileInfo.lines || 0,
-      characters: content.length,
-      complexity: {
-        cyclomatic: complexity,
-        level: this.getComplexityLevel(complexity),
-      },
-      analyzedAt: new Date(),
-    };
+    // Resolve relative paths with respect to current project directory.
+    const fullPath = path.isAbsolute(inputPath)
+      ? inputPath
+      : path.resolve(this.currentProjectPath, inputPath);
 
-    return {
-      content: [
-        { type: 'text', text: `Analysis:\n${JSON.stringify(analysis, null, 2)}` },
-      ],
-    };
+    if (!isValidPath(fullPath)) {
+      throw new McpError(ErrorCode.InvalidRequest, `Invalid path: ${inputPath}`);
+    }
+
+    try {
+      const stats = await fs.stat(fullPath);
+
+      if (stats.isDirectory()) {
+        // Directory – perform project structure scan
+        const structure = await scanProjectStructure(fullPath);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Directory analysis for ${fullPath}:\n${JSON.stringify(structure, null, 2)}`,
+            },
+          ],
+        };
+      } else {
+        // File – perform complexity analysis
+        const content = await safeReadFile(fullPath);
+        if (!content) {
+          throw new McpError(ErrorCode.InvalidRequest, 'File not found or unreadable');
+        }
+
+        const fileInfo = await getFileInfo(fullPath);
+        const complexity = calculateCyclomaticComplexity(content);
+
+        const analysis = {
+          path: inputPath,
+          fileType: fileInfo.type,
+          lines: fileInfo.lines || 0,
+          characters: content.length,
+          complexity: {
+            cyclomatic: complexity,
+            level: this.getComplexityLevel(complexity),
+          },
+          analyzedAt: new Date(),
+        };
+
+        return {
+          content: [
+            { type: 'text', text: `File analysis:\n${JSON.stringify(analysis, null, 2)}` },
+          ],
+        };
+      }
+    } catch (err) {
+      logger.error('Analysis error:', err);
+      throw new McpError(ErrorCode.InternalError, 'Failed to analyze path');
+    }
   }
 
   private async generateDocs(projectName: string, format = 'markdown') {

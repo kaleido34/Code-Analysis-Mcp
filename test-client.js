@@ -9,43 +9,39 @@ import { createWriteStream } from 'fs';
 console.log('🧪 Testing Your Code Analysis MCP Server\n');
 
 // Start the server
-const server = spawn('npm', ['run', 'dev'], {
+const server = spawn('npm', ['run', 'start'], {
   stdio: ['pipe', 'pipe', 'pipe'],
   shell: true
 });
 
 // Test requests we can send to the server
 const testRequests = [
-  // 1. List available resources
-  {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'resources/list'
-  },
-  
-  // 2. Get project structure  
-  {
-    jsonrpc: '2.0',
-    id: 2,
-    method: 'resources/read',
-    params: { uri: 'codebase://project/structure' }
-  },
-  
-  // 3. List available tools
+  // 1. List available tools
   {
     jsonrpc: '2.0', 
-    id: 3,
+    id: 1,
     method: 'tools/list'
   },
   
-  // 4. Analyze a file
+  // 2. Analyze a file in current project
   {
     jsonrpc: '2.0',
-    id: 4,
+    id: 2,
     method: 'tools/call',
     params: { 
-      name: 'analyze_file',
-      arguments: { filePath: 'src/server.ts' }
+      name: 'analyze_path',
+      arguments: { path: 'src/server.ts' }
+    }
+  },
+  
+  // 3. Test analyzing a file from N2N directory (if it exists)
+  {
+    jsonrpc: '2.0',
+    id: 3,
+    method: 'tools/call',
+    params: { 
+      name: 'analyze_path',
+      arguments: { path: 'C:\\Users\\pasha\\Desktop\\N2N' }
     }
   }
 ];
@@ -70,7 +66,7 @@ setTimeout(() => {
     setTimeout(() => {
       console.log(`📤 Request ${index + 1}:`, JSON.stringify(request, null, 2));
       server.stdin.write(JSON.stringify(request) + '\n');
-    }, index * 1000);
+    }, index * 1500);
   });
   
   // Clean up after tests
@@ -78,6 +74,6 @@ setTimeout(() => {
     server.kill();
     console.log('\n✅ Test completed! Your server responds to MCP requests.');
     process.exit(0);
-  }, 6000);
+  }, 8000);
   
 }, 2000); 
