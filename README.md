@@ -25,21 +25,17 @@ A **Model Context Protocol (MCP) server** that provides AI assistants with power
 
 ##  Architecture
 
-```
-Code Analysis MCP Server
-├── Resources (Read-only data)
-│   ├── codebase://project/structure    # File tree and project info
-│   ├── codebase://file/{path}         # Individual file contents  
-│   └── analysis://complexity/{path}    # Code complexity reports
-├──  Tools (AI-callable functions)
-│   ├── analyze_file()                 # Analyze single file
-│   ├── analyze_project()              # Analyze entire project
-│   ├── find_patterns()                # Find code patterns/smells
-│   └── generate_report()              # Generate analysis reports
-└──  Prompts (AI interaction templates)
-    ├── code_review_prompt             # Code review suggestions
-    ├── refactoring_prompt             # Refactoring recommendations
-    └── documentation_prompt           # Auto-documentation
+```diff
+ Code Analysis MCP Server
+ ├── Resources (Read-only data)
+ │   ├── codebase://project/structure    # File tree and project info
+ │   ├── docs://generated/readme         # Auto-generated README
+ │   └── (dynamic)                       # Other future resources
+ ├──  Tools (AI-callable functions)
+ │   ├── analyze_path()                 # Analyze *any* file OR directory
+ │   └── generate_documentation()        # Generate docs from code
+ └──  Prompts (templates)
+     └── code_review                    # Code-review helper
 ```
 
 ##  Learning Outcomes
@@ -83,3 +79,49 @@ Code Analysis MCP Server
 
 
 @code-analysis {"path": "C:\\Users\\pasha\\Desktop\\N2N"}
+
+## 🔧 Usage
+
+1. **Install & build**
+   ```bash
+   npm install
+   npm run build
+   ```
+2. **Start the server (compiled)**
+   ```bash
+   npm start
+   # or: node dist/server.js
+   ```
+3. **Connect from Cursor / Claude Desktop**
+   Update (or create) `claude_desktop_config.json`:
+   ```jsonc
+   {
+     "mcpServers": {
+       "code-analysis": {
+         "command": "node",
+         "args": ["--no-warnings", "dist/server.js"],
+         "cwd": "C:\\Users\\<you>\\Desktop\\Mcp"
+       }
+     }
+   }
+   ```
+4. **Call the tool**
+   ```
+   @code-analysis {"path": "C:\\Users\\<you>\\Desktop\\N2N"}
+   ```
+   • If `path` points to a **file** ⇒ returns JSON with LOC & cyclomatic complexity.
+   • If it points to a **directory** ⇒ returns a full project-structure report (files, languages, LOC, etc.).
+
+## 📥 Tool Input / Output
+
+| Tool            | Input JSON                                    | Returns |
+|-----------------|-----------------------------------------------|---------|
+| analyze_path    | `{ "path": "<absolute-or-relative-path>" }` | Plain-text JSON summary (file or directory) |
+| generate_documentation | `{ "projectName": "MyApp", "format": "markdown" }` | Markdown or JSON docs |
+
+##  Debugging Tips
+
+• **Server logs** → standard error (won't corrupt MCP JSON).<br/>
+• If Cursor shows `Unexpected token` errors, make sure you're running **dist/server.js** (not ts-node).<br/>
+• Re-build after any TypeScript edits: `npm run build`.<br/>
+• Use `LOG_LEVEL=debug node dist/server.js` to get verbose output.

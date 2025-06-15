@@ -157,8 +157,8 @@ export function countLinesOfCode(content: string, fileType: FileType): number {
 ```typescript
 // Tools perform actions that AI can call
 {
-  name: 'analyze_file',
-  description: 'Analyze a single file for complexity and metrics',
+  name: 'analyze_path',
+  description: 'Analyze ANY path (file or directory) for metrics',
   inputSchema: { /* JSON Schema validation */ }
 }
 ```
@@ -187,9 +187,9 @@ try {
 
 #### **Request Validation**
 ```typescript
-private async analyzeFile(filePath: string) {
-  if (!filePath) {
-    throw new McpError(ErrorCode.InvalidParams, 'filePath is required');
+private async analyzePath(args: { path: string }) {
+  if (!args?.path) {
+    throw new McpError(ErrorCode.InvalidParams, 'path is required');
   }
   // Process request
 }
@@ -280,7 +280,7 @@ async function safeReadFile(filePath: string): Promise<string | null> {
 ### **Development Mode:**
 ```bash
 npm run build      # Compile TypeScript
-npm run dev        # Start MCP server
+npm start          # Run compiled MCP server (dist/server.js)
 ```
 
 ### **Testing the Server:**
