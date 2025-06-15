@@ -92,7 +92,7 @@ A **Model Context Protocol (MCP) server** that provides AI assistants with power
    npm start
    # or: node dist/server.js
    ```
-3. **Connect from Cursor / Claude Desktop**
+3. **Connect Claude Desktop**
    Update (or create) `claude_desktop_config.json`:
    ```jsonc
    {
@@ -112,7 +112,7 @@ A **Model Context Protocol (MCP) server** that provides AI assistants with power
    • If `path` points to a **file** ⇒ returns JSON with LOC & cyclomatic complexity.
    • If it points to a **directory** ⇒ returns a full project-structure report (files, languages, LOC, etc.).
 
-## 📥 Tool Input / Output
+##  Tool Input / Output
 
 | Tool            | Input JSON                                    | Returns |
 |-----------------|-----------------------------------------------|---------|
