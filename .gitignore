@@ -79,3 +79,7 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+.cursorrules
+
+.docs/
